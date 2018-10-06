@@ -6,10 +6,28 @@ import (
 	"strings"
 )
 
+type perfdataStatus uint8
+
+const ok perfdataStatus = 0
+const warning perfdataStatus = 1
+const critical perfdataStatus = 2
+
 var posInf = math.Inf(1)
 var negInf = math.Inf(-1)
 
 type PerfdataCollection []Perfdata
+
+func (self PerfdataCollection) calcStatus() perfdataStatus {
+	status := ok
+
+	for _, part := range self {
+		if partStatus := part.calcStatus(); partStatus > status {
+			status = partStatus
+		}
+	}
+
+	return status
+}
 
 func (self PerfdataCollection) String() string {
 	if len(self) < 1 {
@@ -29,6 +47,18 @@ type Perfdata struct {
 	Value      float64
 	Warn, Crit OptionalThreshold
 	Min, Max   OptionalNumber
+}
+
+func (self *Perfdata) calcStatus() perfdataStatus {
+	if self.Crit.contains(self.Value) {
+		return critical
+	}
+
+	if self.Warn.contains(self.Value) {
+		return warning
+	}
+
+	return ok
 }
 
 func (self *Perfdata) String() string {
@@ -55,6 +85,14 @@ func (self *Perfdata) String() string {
 type OptionalThreshold struct {
 	IsSet, Inverted bool
 	Start, End      float64
+}
+
+func (self *OptionalThreshold) contains(value float64) bool {
+	if self.IsSet {
+		return (self.Start <= value && value <= self.End) == self.Inverted
+	}
+
+	return false
 }
 
 func (self *OptionalThreshold) String() string {

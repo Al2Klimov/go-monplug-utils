@@ -8,14 +8,14 @@ import (
 
 func ExecuteCheck(
 	onTerminal func() (output string),
-	check func() (status uint8, output string, perfdata PerfdataCollection, errors map[string]error),
+	check func() (output string, perfdata PerfdataCollection, errors map[string]error),
 ) (exit int) {
 	if terminal.IsTerminal(int(os.Stdout.Fd())) {
 		fmt.Print(onTerminal())
 		return 3
 	}
 
-	status, output, perfdata, errsChk := check()
+	output, perfdata, errsChk := check()
 	if errsChk != nil {
 		for context, err := range errsChk {
 			fmt.Printf("%s: %s\n", context, err.Error())
@@ -28,5 +28,5 @@ func ExecuteCheck(
 		return 3
 	}
 
-	return int(status)
+	return int(perfdata.calcStatus())
 }
