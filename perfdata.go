@@ -1,7 +1,9 @@
 package go_monplug_utils
 
 import (
+	"fmt"
 	"math"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -14,6 +16,12 @@ const critical perfdataStatus = 2
 
 var posInf = math.Inf(1)
 var negInf = math.Inf(-1)
+
+var threshold = func() *regexp.Regexp {
+	number := `-?\d+(?:\.\d+)?`
+	start := `(?:` + number + `|~)`
+	return regexp.MustCompile(`\A@?(?:(?:` + start + `?:)?` + number + `|` + start + `:)\z`)
+}()
 
 type PerfdataCollection []Perfdata
 
@@ -127,6 +135,60 @@ func (self *OptionalThreshold) String() string {
 	}
 
 	return ""
+}
+
+func (self *OptionalThreshold) Set(s string) error {
+	if threshold.MatchString(s) {
+		self.Inverted = s[0] == '@'
+		if self.Inverted {
+			s = s[1:]
+		}
+
+		if startEnd := strings.SplitN(s, ":", 2); len(startEnd) < 2 {
+			self.Start = 0
+
+			if end, errFlt := strconv.ParseFloat(startEnd[0], 64); errFlt == nil {
+				self.End = end
+			} else {
+				self.End = posInf
+			}
+		} else {
+			switch startEnd[0] {
+			case "":
+				self.Start = 0
+			case "~":
+				self.Start = negInf
+			default:
+				if start, errFlt := strconv.ParseFloat(startEnd[0], 64); errFlt == nil {
+					self.Start = start
+				} else {
+					self.Start = posInf
+				}
+			}
+
+			if startEnd[1] == "" {
+				self.End = posInf
+			} else {
+				if end, errFlt := strconv.ParseFloat(startEnd[1], 64); errFlt == nil {
+					self.End = end
+				} else {
+					self.End = posInf
+				}
+			}
+		}
+
+		self.IsSet = true
+
+		return nil
+	}
+
+	return invalidThreshold(s)
+}
+
+type invalidThreshold string
+
+func (i invalidThreshold) Error() string {
+	return fmt.Sprintf("invalid threshold: %q", i)
 }
 
 type OptionalNumber struct {
