@@ -3,6 +3,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:599d80b63bb62f933cd15b2002f256743d5c8dac8f96b11d75037e060990e421"
+  name = "github.com/Al2Klimov/go-test-utils"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "44f0ba1d39169640834ba2ef3a5d26658f5672b1"
+
+[[projects]]
+  branch = "master"
   digest = "1:3f3a05ae0b95893d90b9b3b5afdb79a9b3d96e4e36e099d841ae602e4aca0da8"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
@@ -23,6 +31,9 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  input-imports = ["golang.org/x/crypto/ssh/terminal"]
+  input-imports = [
+    "github.com/Al2Klimov/go-test-utils",
+    "golang.org/x/crypto/ssh/terminal",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
