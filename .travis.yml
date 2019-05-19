@@ -1,0 +1,13 @@
+language: go
+
+go:
+  - "1.x"
+  - master
+
+before_script:
+  - curl -LSso "${GOPATH}/bin/dep" https://github.com/golang/dep/releases/download/v0.5.0/dep-linux-amd64
+  - chmod +x "${GOPATH}/bin/dep"
+  - '"${GOPATH}/bin/dep" ensure'
+
+script:
+  - go test -failfast -race -v -cover
