@@ -8,11 +8,11 @@ import (
 	"strings"
 )
 
-type perfdataStatus uint8
+type PerfdataStatus uint8
 
-const ok perfdataStatus = 0
-const warning perfdataStatus = 1
-const critical perfdataStatus = 2
+const Ok PerfdataStatus = 0
+const Warning PerfdataStatus = 1
+const Critical PerfdataStatus = 2
 
 var posInf = math.Inf(1)
 var negInf = math.Inf(-1)
@@ -25,11 +25,11 @@ var threshold = func() *regexp.Regexp {
 
 type PerfdataCollection []Perfdata
 
-func (self PerfdataCollection) calcStatus() perfdataStatus {
-	status := ok
+func (self PerfdataCollection) calcStatus() PerfdataStatus {
+	status := Ok
 
 	for _, part := range self {
-		if partStatus := part.calcStatus(); partStatus > status {
+		if partStatus := part.GetStatus(); partStatus > status {
 			status = partStatus
 		}
 	}
@@ -57,16 +57,16 @@ type Perfdata struct {
 	Min, Max   OptionalNumber
 }
 
-func (self *Perfdata) calcStatus() perfdataStatus {
+func (self *Perfdata) GetStatus() PerfdataStatus {
 	if self.Crit.contains(self.Value) {
-		return critical
+		return Critical
 	}
 
 	if self.Warn.contains(self.Value) {
-		return warning
+		return Warning
 	}
 
-	return ok
+	return Ok
 }
 
 func (self *Perfdata) String() string {
